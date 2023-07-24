@@ -123,7 +123,7 @@ float_dist=${dist_major}.${dist_minor}
 
 echo
 echo "/* The distribution version number of this shell. */"
-echo "#define DISTVERSION \"${float_dist}\""
+echo "#define DISTVERSION \"${float_dist}-flet\""
 
 # Output the patch level
 #echo

@@ -1,0 +1,18 @@
+{
+    "files.associations": {
+        "shell.h": "c",
+        "common.h": "c",
+        "stdc.h": "c",
+        "stdio.h": "c",
+        "sym_table.h": "c",
+        "fletparser_sym_table.h": "c",
+        "parser.tab.h": "c",
+        "error.h": "c",
+        "fletparser_lex.yy.h": "c",
+        "flet_parser.h": "c",
+        "bashintl.h": "c",
+        "variables.h": "c",
+        "stdlib.h": "c",
+        "string.h": "c"
+    }
+}

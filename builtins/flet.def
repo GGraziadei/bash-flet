@@ -1,0 +1,163 @@
+This file is flet.def, from which is created flet.c.
+It implements the builtin "flet" in Bash.
+
+Copyright (C) 1987-2009 Free Software Foundation, Inc.
+
+This file is part of GNU Bash, the Bourne Again SHell.
+
+Bash is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Bash is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Bash.  If not, see <http://www.gnu.org/licenses/>.
+
+$BUILTIN flet
+
+$FUNCTION flet_builtin
+$PRODUCES flet.c
+$SHORT_DOC flet
+
+Evaluate arithmetic floating point expressions.
+
+Options:
+  -f	get input string from file NAME
+  -d	enable DEBUG (bison debugger)
+
+Evaluate each ARG as an arithmetic expression. The following list of operators is
+grouped into levels of equal-precedence operators.  The levels are listed
+in order of decreasing precedence.
+
+	id++, id--	variable post-increment, post-decrement
+	++id, --id	variable pre-increment, pre-decrement
+	-, +		unary minus, plus
+	!, ~		logical and bitwise negation
+	**			exponentiation
+	*, /, %		multiplication, division, remainder
+	+, -		addition, subtraction
+	<<, >>		left and right bitwise shifts
+	<=, >=, <, >	comparison
+	==, !=		equality, inequality
+	&		bitwise AND
+	^		bitwise XOR
+	|		bitwise OR
+	&&		logical AND
+	||		logical OR
+	expr ? expr : expr
+			conditional operator
+	=, *=, /=, %=,
+	+=, -=, <<=, >>=,
+	&=, ^=, |=	assignment
+
+Shell variables are allowed as operands.  The name of the variable
+is replaced by its value (coerced to a fixed-width integer) within
+an expression.  The variable need not have its integer attribute
+turned on to be used in an expression.
+
+Operators are evaluated in order of precedence.  Sub-expressions in
+parentheses are evaluated first and may override the precedence
+rules above.
+
+Exit Status:
+If the last ARG evaluates to 0, flet returns 1; flet returns 0 otherwise.
+$END
+
+#include <config.h>
+
+#if defined (HAVE_UNISTD_H)
+#  ifdef _MINIX
+#    include <sys/types.h>
+#  endif
+#  include <unistd.h>
+#endif
+
+#include <stdio.h>
+
+#include "../bashintl.h"
+#include "../shell.h"
+#include "common.h"
+
+#include "bashgetopt.h"
+#include "../bashansi.h"
+
+#include "../lib/flet/lib_flet.h"
+#include "../lib/flet/sym_table.h"
+
+extern sym_entry* sym_table;
+
+void update_variables(){
+	char buffer[128];
+	sym_entry *p = sym_table;
+	while(p != NULL) {
+		sprintf(buffer, "%f", p->value.real_value);
+		bind_variable(p->name, buffer, 0 );
+		p = p->next;
+	}
+	printf("Variable updated!");
+	free_sym_table();
+}
+
+/* Arithmetic FLET function. */
+int
+flet_builtin (WORD_LIST *list)
+{
+  intmax_t ret;
+  int expok;
+  
+  if (list == 0)
+    {
+      builtin_error (_("expression expected"));
+      return (EXECUTION_FAILURE);
+    }
+
+  USE_VAR(list);
+
+  int opt, from_file, debug_mode;
+  char *vname;
+  debug_mode = from_file = 0;
+  vname = NULL;
+
+  reset_internal_getopt ();
+  while ((opt = internal_getopt (list, "df:")) != -1){
+	switch(opt){
+		case 'f':
+			from_file = 1;
+			vname = list_optarg;
+			break;
+		case 'd':
+			debug_mode = 1;
+			break;	
+		CASE_HELPOPT;
+		default:
+			builtin_usage ();
+			return (EX_USAGE);
+	}
+  }
+
+	if(from_file)
+		{
+			printf("Evaluation form file: %s\n\n", vname);
+			int res = file_flet(vname, debug_mode);
+			if (res != 0) return (EXECUTION_FAILURE);
+			update_variables();
+			return ((ret == 0) ? EXECUTION_FAILURE : EXECUTION_SUCCESS);
+		}
+
+	list = loptend; //end of arg
+
+	for (; list; list = list->next){
+		int res = str_buf_flet(list->word->word, debug_mode);
+		if (res != 0) return (EXECUTION_FAILURE);
+		update_variables();
+	}
+
+  	return ((ret == 0) ? EXECUTION_FAILURE : EXECUTION_SUCCESS);
+}
+
+

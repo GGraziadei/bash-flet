@@ -340,6 +340,26 @@ TERMCAP_DEP = @TERMCAP_DEP@
 TERMCAP_SOURCE	= $(TERM_LIBSRC)/termcap.c $(TERM_LIBSRC)/tparam.c
 TERMCAP_OBJ	= $(TERM_LIBDIR)/termcap.o $(TERM_LIBDIR)/tparam.o
 
+#flet library 
+FLET_LIBSRC = $(LIBSRC)/flet
+FLET_LIBDIR = $(dot)/$(LIBSUBDIR)/flet
+FLET_ABSSRC = ${topdir}/$(FLET_LIBDIR)
+
+FLET_LIB = -lflet
+FLET_LIBRARY = $(FLET_LIBDIR)/libflet.a
+FLET_LDFLAGS = -L$(FLET_LIBDIR)
+FLET_DEP = $(FLET_LIBRARY)
+
+$(FLET_LIBSRC)/%.c:
+	@(cd $(FLET_LIBDIR) && $(MAKE) $(MFLAGS) ) || exit 1 
+
+FLET_SOURCE	= $(FLET_LIBSRC)/error.c $(FLET_LIBSRC)/lib_flet.c \
+			$(FLET_LIBSRC)/lex.yy.c $(FLET_LIBSRC)/parser.tab.c 
+
+TERMCAP_OBJ	= $(FLET_LIBSRC)/error.o $(FLET_LIBSRC)/lib_flet.o \
+			$(FLET_LIBSRC)/lex.yy.o $(FLET_LIBSRC)/parser.tab.o
+
+#glob library
 GLOB_LIBSRC = $(LIBSRC)/glob
 GLOB_LIBDIR = $(dot)/$(LIBSUBDIR)/glob
 GLOB_ABSSRC = ${topdir}/$(GLOB_LIBDIR)
@@ -423,6 +443,8 @@ $(MALLOC_LIBRARY):	${MALLOC_SOURCE} ${ALLOC_HEADERS} config.h
 		 $(MAKE) $(MFLAGS) \
 		 MALLOC_CFLAGS="$(MALLOC_CFLAGS)" ${MALLOC_TARGET} ) || exit 1
 
+$(FLET_LIBRARY): ${FLET_SOURCE} ${ALLOC_HEADERS} config.h
+	
 BASHINCDIR = ${srcdir}/include
 BASHINCFILES =	 $(BASHINCDIR)/posixstat.h $(BASHINCDIR)/ansi_stdlib.h \
 		 $(BASHINCDIR)/filecntl.h $(BASHINCDIR)/posixdir.h \
@@ -435,13 +457,13 @@ BASHINCFILES =	 $(BASHINCDIR)/posixstat.h $(BASHINCDIR)/ansi_stdlib.h \
 
 LIBRARIES = $(GLOB_LIB) $(SHLIB_LIB) $(READLINE_LIB) $(HISTORY_LIB) \
 	    $(TERMCAP_LIB) $(TILDE_LIB) $(MALLOC_LIB) $(INTL_LIB) $(LIBICONV) \
-	    $(LOCAL_LIBS)
+	    $(LOCAL_LIBS) $(FLET_LIB)
 
 LIBDEP = $(GLOB_DEP) $(SHLIB_DEP) $(INTL_DEP) $(READLINE_DEP) $(HISTORY_DEP) \
-	 $(TERMCAP_DEP) $(TILDE_DEP) $(MALLOC_DEP)
+	 $(TERMCAP_DEP) $(TILDE_DEP) $(MALLOC_DEP) $(FLET_DEP)
 
 LIBRARY_LDFLAGS = $(READLINE_LDFLAGS) $(HISTORY_LDFLAGS) $(GLOB_LDFLAGS) \
-		  $(TILDE_LDFLAGS) $(MALLOC_LDFLAGS) $(SHLIB_LDFLAGS)
+		  $(TILDE_LDFLAGS) $(MALLOC_LDFLAGS) $(SHLIB_LDFLAGS) $(FLET_LDFLAGS)
 
 #
 # The shell itself
@@ -597,7 +619,7 @@ LOADABLES_DIR = ${top_builddir}/examples/loadables
 
 $(Program): $(OBJECTS) $(BUILTINS_DEP) $(LIBDEP) .build
 	$(RM) $@
-	$(PURIFY) $(CC) $(BUILTINS_LDFLAGS) $(LIBRARY_LDFLAGS) $(LDFLAGS) -o $(Program) $(OBJECTS) $(LIBS)
+	$(PURIFY) $(CC) $(BUILTINS_LDFLAGS) $(LIBRARY_LDFLAGS) $(LDFLAGS) -o $(Program) $(OBJECTS) $(LIBS) -lm
 	ls -l $(Program)
 	-$(SIZE) $(Program)
 
@@ -906,7 +928,7 @@ uninstall:	.made
 .PHONY: basic-clean clean realclean maintainer-clean distclean mostlyclean maybe-clean
 
 LIB_SUBDIRS = ${RL_LIBDIR}  ${HIST_LIBDIR} ${TERM_LIBDIR} ${GLOB_LIBDIR} \
-		${INTL_LIBDIR} ${TILDE_LIBDIR} ${ALLOC_LIBDIR} ${SH_LIBDIR}
+		${INTL_LIBDIR} ${TILDE_LIBDIR} ${ALLOC_LIBDIR} ${SH_LIBDIR} ${FLET_LIBDIR}
 
 basic-clean:
 	$(RM) $(OBJECTS) $(Program) bashbug
