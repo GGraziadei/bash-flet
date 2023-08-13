@@ -27,10 +27,10 @@ $SHORT_DOC flet
 Evaluate arithmetic floating point expressions.
 
 Options:
-  -f	get input string from file NAME
+  -f	declare input from file PATH
   -d	enable DEBUG (bison debugger)
 
-Evaluate each ARG as an arithmetic expression. The following list of operators is
+Evaluate each ARG as an arithmetic expression. Each expression ends with semicolumn. The following list of operators is
 grouped into levels of equal-precedence operators.  The levels are listed
 in order of decreasing precedence.
 
@@ -49,11 +49,34 @@ in order of decreasing precedence.
 	|		bitwise OR
 	&&		logical AND
 	||		logical OR
-	expr ? expr : expr
-			conditional operator
+	boolean_exp ? scalar_exp : scalar_exp conditional operator
 	=, *=, /=, %=,
 	+=, -=, <<=, >>=,
 	&=, ^=, |=	assignment
+	id=scalar_exp|boolean_exp
+	acos(scalar_exp) computes arc cosine. 
+	acosh(scalar_exp) computes arc hyperbolic cosine. 
+	asin(scalar_exp) computes arc sine. 
+	asinh(scalar_exp) computes the hyperbolic of arc sine of an argument. 
+	atan(scalar_exp) computes the arc tangent of an argument. 
+	atan2(scalar_exp) computes the arc tangent of an argument. 
+	atanh(scalar_exp) computes arc hyperbolic tangent. 
+	cbrt(scalar_exp) computes cube root of a number.
+	ceil(scalar_exp) computes the nearest integer greater than argument. 
+	cos(scalar_exp) computes the cosine of an argument. 
+	cosh(scalar_exp) computer hyperbolic cosine. 
+	exp(scalar_exp) computes the exponential raised to the argument. 
+	fabs(scalar_exp) computes absolute value. 
+	floor(scalar_exp) calculates the nearest integer less than argument. 
+	hypot(scalar_exp) computes hypotenuse. 
+	log(scalar_exp) computes natural logarithm of an argument. 
+	log10(scalar_exp) computes the base 10 logarithm of an argument. 
+	pow(scalar_exp) Computes power of a number. 
+	sin(scalar_exp) compute sine of a number.
+	sinh(scalar_exp) computes the hyperbolic sine of an argument.
+	sqrt(scalar_exp) computes square root of a number. 
+	tan(scalar_exp) computes tangent. 
+	tanh(scalar_exp) computes the hyperbolic tangent of an argument.
 
 Shell variables are allowed as operands.  The name of the variable
 is replaced by its value (coerced to a fixed-width integer) within
@@ -99,7 +122,6 @@ void update_variables(){
 		bind_variable(p->name, buffer, 0 );
 		p = p->next;
 	}
-	printf("Variable updated!");
 	free_sym_table();
 }
 
